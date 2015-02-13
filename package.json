@@ -1,0 +1,12 @@
+{
+    "dependencies": {
+        "simplecrawler": "0.3.10",
+        "node-linq": "0.0.5",
+        "npm install sitemap": "0.7.4"
+    },
+    "devDependencies": {
+        "chai": "^1.10.0",
+        "mocha": "^2.1.0",
+        "sinon": "^1.12.2"
+    }
+}

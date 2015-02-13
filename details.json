@@ -1,0 +1,39 @@
+{
+    "uid": "pencilblue_sitemap",
+    "name": "Site map plugin for pencilblue",
+    "description": "Builds a full sitemap based on all content items in your site.",
+    "version": "0.0.1",
+    "author": {
+    "name": "Ben Tidwell",
+    "email": "ben.tidwell@careerbuilder.com",
+    "website": "",
+    "contributors": [
+            {
+                "name": "Christina Chatham",
+                "email": "christina.chatham@careerbuilder.com"
+            },
+            {
+                "name": "Corrine Olson",
+                "email": "corrine.olson@careerbuilder.com"
+            },
+            {
+                "name":"Andy Mullen",
+                "email": "andy.mullen@careerbuilder.com"
+            }
+        ]
+    },
+    "settings": [],
+    "permissions": { },
+    "main_module": {
+        "path": "pencilblue_sitemap.js"
+    },
+    "theme": {
+        "settings": [],
+        "content_templates":[
+            {
+                "file": "index",
+                "name": "Default"
+            }
+        ]
+    }
+}

@@ -6,8 +6,8 @@ var excludedCrawlPaths = [
     '/public/'
 ];
 
-var excludedSiteMapPaths = ['/search', '/join'];
-var myCrawler = new Crawler("pencilblue-548349876.us-east-1.elb.amazonaws.com", "/search");
+var excludedSiteMapPaths = ['/search', '/join'].concat(excludedCrawlPaths);
+var myCrawler = new Crawler("pencilblue-548349876.us-east-1.elb.amazonaws.com", "");
 var conditionID = myCrawler.addFetchCondition(function(parsedURL) {
     return pathIsNotAFile(parsedURL.path) && pathIsNotInExclusionList(parsedURL.path);
 });
@@ -48,16 +48,21 @@ function pathIsNotAFile(path){
     return path.match(/^[^.]+$|\.(?!(js|css|woff|tff|ttf|svg|eot|ico|jpg|png|bmp|gif|xml|json)$)([^.]+$)/);
 }
 function pathIsNotInExclusionList(path){
-    return excludedCrawlPaths.indexOf(path) === -1;
+    return listDoesNotContainItem(excludedCrawlPaths, path);
 }
 function pathIsNotInExclusionSiteMapList(path){
-    return excludedSiteMapPaths.indexOf(path) === -1;
+    return listDoesNotContainItem(excludedSiteMapPaths, path);
 }
-
 function urlIsNotAlreadyInSiteMap(url){
     return new LINQ(pages).Where(function(page){
         return page.url === url;
-    }).toArray().length === 0;
+    }).ToArray().length === 0;
+}
+
+function listDoesNotContainItem(list, item){
+    return new LINQ(list).Where(function(myItem){
+        return item.indexOf(myItem) > -1;
+    }).ToArray().length === 0;
 }
 //Functional
 function stripQueryString(url){

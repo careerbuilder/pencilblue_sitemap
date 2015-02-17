@@ -2,44 +2,71 @@ var pb = global.pb;
 var util = global.util;
 
 var sm = require('sitemap');
+var CrawlService = pb.plugins.getService('crawlService', 'pencilblue_sitemap');
 
 function SiteMapController() {}
 
 util.inherits(SiteMapController, pb.BaseController);
 
 SiteMapController.prototype.SiteMap = function(cb){
-    var dao = new pb.DAO();
-    var options = {
-        where: {
-            draft:{$ne: 1}
-        },
-        select: {
-            url: 1
-        }
-    };
+    var cos = new pb.CustomObjectService();
     
-    dao.q('page', options, function(err, pages){
-        console.log(pages);
-        var urls = [];
-        pages.forEach(function(page){
-            console.log(page);
-            urls.push({
-                url: pb.config.siteRoot + '/page/' + page.url,
-                priority: 0.3
+    cos.loadTypeByName('siteMap', function(err, siteMapType){
+        if(err){
+            pb.log.error(err);
+        }
+        else{
+            cos.findByType(siteMapType, {}, function(err, siteMap){
+                if(err){
+                    pb.log.error(err);
+                }
+                else{
+                    if(siteMap.length === 0){
+                        cb({
+                                    code: 200,
+                                    content_type: 'application/xml',
+                                    content: ''
+                        });
+                        updateSiteMap(cos, siteMapType);
+                    }
+                    else{
+                        var content = {
+                            code: 200,
+                            content_type: 'application/xml',
+                            content: siteMap[0].xml
+                        };
+                        cb(content);
+                        updateSiteMap(cos, siteMapType);
+                    }
+                }
             });
-        });
+        }
+    });
+};
+
+function updateSiteMap(cos, siteMapType){
+    pb.log.info('Updating Site Map');
+    var crawlService = new CrawlService();
+    crawlService.crawlSite(pb.config.siteRoot, function(pages){
         var sitemap = sm.createSitemap({
             hostname: pb.config.siteRoot,
             cacheTime: 0,
-            urls:urls
+            urls:pages
         });
         sitemap.toXML(function(xml){
-            var content = {
-                code: 200,
-                content_type: 'application/xml',
-                content: xml
+            var coSiteMap = { 
+                type: siteMapType._id.toString(),
+                name: siteMapType.name,
+                host: sitemap.hostname,
+                xml: xml
             };
-            cb(content);
+            var siteMapDocument = pb.DocumentCreator.create('custom_object', coSiteMap);
+            cos.save(siteMapDocument, siteMapType, function(err, result){
+                if(err){
+                    pb.log.error(err);
+                }
+                pb.log.silly(result);
+            });
         });
     });
 }

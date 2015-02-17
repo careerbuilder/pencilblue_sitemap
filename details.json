@@ -22,7 +22,20 @@
             }
         ]
     },
-    "settings": [],
+    "settings": [
+        {
+            "name": "plugin_path_csv",
+            "value": ""
+        },
+        {
+            "name": "ignore_path_csv",
+            "value": "/api/localization/script,/public/"
+        },
+        {
+            "name": "exclude_sitemap_path_csv",
+            "value": ""
+        }
+    ],
     "permissions": { },
     "main_module": {
         "path": "pencilblue_sitemap.js"

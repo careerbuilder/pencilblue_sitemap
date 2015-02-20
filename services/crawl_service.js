@@ -52,32 +52,40 @@ CrawlService.getName = function() {
     return "crawlService";
 };
 
+var finished = false;
+
 CrawlService.prototype.crawlSite = function(hostname, cb){
-    loadSettings();
-    pluginPaths.forEach(function(path){
-        
-    });
-    var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
-    var myCrawler = new Crawler(siteRoot);
-    myCrawler.initialPort = pb.config.sitePort;
-    myCrawler.maxConcurrency = pb.config.crawler.maxConcurrency;
-    var conditionID = myCrawler.addFetchCondition(function(parsedURL) {
-        return pathIsNotAFile(parsedURL.path) && pathIsNotInExclusionList(parsedURL.path);
-    });
-    myCrawler.on("fetchcomplete",function(queueItem, data, res){
-        var path = stripQueryString(queueItem.path);
-        if(pathIsNotAFile(path) && pathIsNotInExclusionSiteMapList(path) && urlIsNotAlreadyInSiteMap(queueItem.url)){
-            pages.push({
-                url: stripQueryString(queueItem.url),
-                priority: getPagePriority(queueItem)
+    loadSettings(function(){
+        console.log(pluginPaths);
+        pluginPaths.forEach(function(path){
+            var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
+            var myCrawler = new Crawler(siteRoot, path);
+            myCrawler.initialPort = pb.config.sitePort;
+            myCrawler.maxConcurrency = pb.config.crawler.maxConcurrency;
+            var conditionID = myCrawler.addFetchCondition(function(parsedURL) {
+                return pathIsNotAFile(parsedURL.path) && pathIsNotInExclusionList(parsedURL.path);
             });
-        }
+            myCrawler.on("fetchcomplete",function(queueItem, data, res){
+                var path = stripQueryString(queueItem.path);
+                if(pathIsNotAFile(path) && pathIsNotInExclusionSiteMapList(path) && urlIsNotAlreadyInSiteMap(queueItem.url)){
+                    pages.push({
+                        url: stripQueryString(queueItem.url),
+                        priority: getPagePriority(queueItem)
+                    });
+                }
+            });
+            myCrawler.on("complete", function(){
+                if(path === pluginPaths[pluginPaths.length - 1]){
+                    pb.log.info("Crawling all paths Complete");
+                    pb.log.info("Crawler found " + pages.length + " pages");
+                    finished = true;
+                    cb(pages);
+                }
+                pb.log.info("Crawling from " + path + " Complete");
+            });
+            myCrawler.start();
+        });
     });
-    myCrawler.on("complete", function(){
-        pb.log.info("Crawling Complete");
-        cb(pages);
-    });
-    myCrawler.start();
 };
 
 //PRIVATE
@@ -116,9 +124,11 @@ function getPagePriority(queueItem){
     return 0.3;
 }
 
-function loadSettings(){
+function loadSettings(cb){
     pb.plugins.getSettings('pencilblue_sitemap', function(err, siteMapSettings){
-        siteMapSettings.forEach(function(setting){
+        pb.log.info(siteMapSettings);
+        for(var i in siteMapSettings){
+            var setting = siteMapSettings[i]
             switch(setting.name){
                     case 'plugin_path_csv':
                         pluginPaths = setting.value.split(',');
@@ -132,7 +142,8 @@ function loadSettings(){
                     default:
                         break;
             }
-        });
+        }
+        cb();
     });
 }
 

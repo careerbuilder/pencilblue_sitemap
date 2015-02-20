@@ -55,8 +55,12 @@ CrawlService.getName = function() {
 var finished = false;
 
 CrawlService.prototype.crawlSite = function(hostname, cb){
+    pages.splice(0, pages.length);
     loadSettings(function(){
-        console.log(pluginPaths);
+        pages.push({
+                        url: stripQueryString(hostname),
+                        priority: 1.0
+        });
         pluginPaths.forEach(function(path){
             var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
             var myCrawler = new Crawler(siteRoot, path);
@@ -67,21 +71,23 @@ CrawlService.prototype.crawlSite = function(hostname, cb){
             });
             myCrawler.on("fetchcomplete",function(queueItem, data, res){
                 var path = stripQueryString(queueItem.path);
-                if(pathIsNotAFile(path) && pathIsNotInExclusionSiteMapList(path) && urlIsNotAlreadyInSiteMap(queueItem.url)){
+                var url = stripQueryString(queueItem.url);
+                if(pathIsNotAFile(path) && pathIsNotInExclusionSiteMapList(path) && urlIsNotAlreadyInSiteMap(url)){
                     pages.push({
-                        url: stripQueryString(queueItem.url),
+                        url: url,
                         priority: getPagePriority(queueItem)
                     });
                 }
             });
             myCrawler.on("complete", function(){
+                pb.log.info("Crawling from " + path + " Complete");
+                pb.log.info("Result from " + path + ": " + pages);
                 if(path === pluginPaths[pluginPaths.length - 1]){
                     pb.log.info("Crawling all paths Complete");
                     pb.log.info("Crawler found " + pages.length + " pages");
                     finished = true;
                     cb(pages);
                 }
-                pb.log.info("Crawling from " + path + " Complete");
             });
             myCrawler.start();
         });
@@ -102,15 +108,18 @@ function pathIsNotInExclusionSiteMapList(path){
     return listDoesNotContainItem(excludedSiteMapPaths, path);
 }
 function urlIsNotAlreadyInSiteMap(url){
-    return new LINQ(pages).Where(function(page){
+    var queryResult = new LINQ(pages).Where(function(page){
         return page.url === url;
-    }).ToArray().length === 0;
+    }).ToArray();
+    var notInList = queryResult.length === 0;
+    return notInList;
 }
 
 function listDoesNotContainItem(list, item){
-    return new LINQ(list).Where(function(myItem){
+    var listcontaining_item = new LINQ(list).Where(function(myItem){
         return item.indexOf(myItem) > -1;
     }).ToArray().length === 0;
+    return listcontaining_item;
 }
 
 function stripQueryString(url){
@@ -130,7 +139,7 @@ function loadSettings(cb){
         for(var i in siteMapSettings){
             var setting = siteMapSettings[i]
             switch(setting.name){
-                    case 'plugin_path_csv':
+                    case 'crawl_paths_csv':
                         pluginPaths = setting.value.split(',');
                         break;
                     case 'ignore_path_csv':

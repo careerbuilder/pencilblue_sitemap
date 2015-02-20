@@ -24,8 +24,8 @@
     },
     "settings": [
         {
-            "name": "plugin_path_csv",
-            "value": ""
+            "name": "crawl_paths_csv",
+            "value": "/"
         },
         {
             "name": "ignore_path_csv",

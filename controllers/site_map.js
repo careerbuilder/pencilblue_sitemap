@@ -14,7 +14,9 @@ SiteMapController.prototype.SiteMap = function(cb){
     var crawlService = new CrawlService();
     sitemapService.getSiteMap(function(xml){
         crawlService.crawlSite(pb.config.siteRoot, function(pages){
-            sitemapService.updateSiteMap(pages);
+            sitemapService.updateSiteMap(pages, function(xml){
+                pb.log.silly("Sitemap update complete.  Result: " + xml);
+            });
         });
         cb({
             code:200,

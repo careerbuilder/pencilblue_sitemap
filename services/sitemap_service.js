@@ -51,7 +51,7 @@ SitemapService.getName = function() {
 
 SitemapService.prototype.getSiteMap = function(cb){
     loadSitemap(function(siteMapDoc){
-        if(siteMapDoc === undefined){
+        if(siteMapDoc === null){
             cb('');
         }
         else{
@@ -61,7 +61,7 @@ SitemapService.prototype.getSiteMap = function(cb){
     });
 };
 
-SitemapService.prototype.updateSiteMap = function(pages){
+SitemapService.prototype.updateSiteMap = function(pages, cb){
     var sitemap = sm.createSitemap({
         hostname: pb.config.siteRoot,
         cacheTime: 0,
@@ -69,6 +69,7 @@ SitemapService.prototype.updateSiteMap = function(pages){
     }); 
     sitemap.toXML(function(xml){
         saveSiteMap(xml);
+        cb(xml);
     });
 };
 
@@ -99,6 +100,9 @@ function saveSiteMap(xml){
     cos.save(mySiteMapDoc, mySiteMapType, function(err, result){
         if(err){
             pb.log.error(err);
+        }
+        else{
+            pb.log.silly("Sitemap custom object save/update count: " + result);
         }
     });
 }

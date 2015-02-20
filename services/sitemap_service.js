@@ -51,7 +51,6 @@ SitemapService.getName = function() {
 
 SitemapService.prototype.getSiteMap = function(cb){
     loadSitemap(function(siteMapDoc){
-        console.log(siteMapDoc);
         if(siteMapDoc === undefined){
             cb('');
         }
@@ -101,7 +100,6 @@ function saveSiteMap(xml){
         if(err){
             pb.log.error(err);
         }
-        pb.log.info(result);
     });
 }
 

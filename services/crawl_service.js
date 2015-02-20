@@ -80,11 +80,10 @@ CrawlService.prototype.crawlSite = function(hostname, cb){
                 }
             });
             myCrawler.on("complete", function(){
-                pb.log.info("Crawling from " + path + " Complete");
-                pb.log.info("Result from " + path + ": " + pages);
+                pb.log.silly("Crawling from " + path + " Complete");
                 if(path === pluginPaths[pluginPaths.length - 1]){
-                    pb.log.info("Crawling all paths Complete");
-                    pb.log.info("Crawler found " + pages.length + " pages");
+                    pb.log.silly("Crawling all paths Complete");
+                    pb.log.silly("Crawler found " + pages.length + " pages");
                     finished = true;
                     cb(pages);
                 }
@@ -135,7 +134,6 @@ function getPagePriority(queueItem){
 
 function loadSettings(cb){
     pb.plugins.getSettings('pencilblue_sitemap', function(err, siteMapSettings){
-        pb.log.info(siteMapSettings);
         for(var i in siteMapSettings){
             var setting = siteMapSettings[i]
             switch(setting.name){

@@ -2,11 +2,11 @@ var CustomObjectService = require('./custom_object_service_mock');
 module.exports.getMockPB = function(){
     return {
         plugins: {
-            getSettings : function(pluginname, cb){}    
+            getSettings : getSettings   
         },
         config: {
-            sitePort:'80',
-            siteRoot:'dev.careerbuildercareers.com',
+            sitePort:'8080',
+            siteRoot:'http://dev.careerbuildercareers.com:8080',
             crawler:{
                 maxConcurrency: 10
             }
@@ -21,6 +21,24 @@ module.exports.getMockPB = function(){
     };
 };
 
+function getSettings(pluginname, cb){
+    var settings = [
+        {
+            name: 'crawl_paths_csv',
+            value: '/,/search'
+        },
+        {
+            name: 'ignore_path_csv',
+            value: '/api/localization/script,/public/'
+        },
+        {
+            name: 'exclude_sitemap_path_csv',
+            value: '/search,/join'
+        },
+    ];
+    cb(undefined, settings);
+}
+
 function log(message){
-    console.log(message);
+    //console.log(message);
 }

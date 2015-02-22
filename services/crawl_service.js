@@ -1,13 +1,13 @@
-var pb;
+var pb, Crawler;
 if (typeof global.pb === 'undefined') {
     var mockService = require('../test/helpers/pb_mock_service');
     pb = mockService.getMockPB();
+    Crawler = require('../test/helpers/crawler_mock');
 }
 else{
     pb = global.pb;
+    Crawler = require('simplecrawler');
 }
-
-var Crawler = require('simplecrawler');
 var LINQ = require('node-linq').LINQ;
 
 var excludedCrawlPaths = [];
@@ -52,14 +52,12 @@ CrawlService.getName = function() {
     return "crawlService";
 };
 
-var finished = false;
-
 CrawlService.prototype.crawlSite = function(hostname, cb){
     pages.splice(0, pages.length);
     loadSettings(function(){
         pages.push({
-                        url: stripQueryString(hostname),
-                        priority: 1.0
+            url: stripQueryString(hostname),
+            priority: 1.0
         });
         pluginPaths.forEach(function(path){
             var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
@@ -70,9 +68,10 @@ CrawlService.prototype.crawlSite = function(hostname, cb){
                 return pathIsNotAFile(parsedURL.path) && pathIsNotInExclusionList(parsedURL.path);
             });
             myCrawler.on("fetchcomplete",function(queueItem, data, res){
-                var path = stripQueryString(queueItem.path);
+                console.log(queueItem.url);
+                var myPath = stripQueryString(queueItem.path);
                 var url = stripQueryString(queueItem.url);
-                if(pathIsNotAFile(path) && pathIsNotInExclusionSiteMapList(path) && urlIsNotAlreadyInSiteMap(url)){
+                if(pathIsNotAFile(myPath) && pathIsNotInExclusionSiteMapList(myPath) && urlIsNotAlreadyInSiteMap(url)){
                     pages.push({
                         url: url,
                         priority: getPagePriority(queueItem)
@@ -84,7 +83,6 @@ CrawlService.prototype.crawlSite = function(hostname, cb){
                 if(path === pluginPaths[pluginPaths.length - 1]){
                     pb.log.silly("Crawling all paths Complete");
                     pb.log.silly("Crawler found " + pages.length + " pages");
-                    finished = true;
                     cb(pages);
                 }
             });
@@ -122,7 +120,10 @@ function listDoesNotContainItem(list, item){
 }
 
 function stripQueryString(url){
-    return url.substr(0, url.indexOf("?"));
+    if(url.indexOf("?") > -1){
+         return url.substr(0, url.indexOf("?"));
+    }
+    return url;
 }
     
 function getPagePriority(queueItem){

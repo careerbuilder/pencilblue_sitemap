@@ -68,7 +68,6 @@ CrawlService.prototype.crawlSite = function(hostname, cb){
                 return pathIsNotAFile(parsedURL.path) && pathIsNotInExclusionList(parsedURL.path);
             });
             myCrawler.on("fetchcomplete",function(queueItem, data, res){
-                console.log(queueItem.url);
                 var myPath = stripQueryString(queueItem.path);
                 var url = stripQueryString(queueItem.url);
                 if(pathIsNotAFile(myPath) && pathIsNotInExclusionSiteMapList(myPath) && urlIsNotAlreadyInSiteMap(url)){

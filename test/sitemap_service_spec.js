@@ -5,6 +5,7 @@ var sinon = require('sinon');
 var chai = require('chai');
 var expect = chai.expect;
 var sm = require('sitemap');
+var mockxml = require('../test/helpers/xml_mock').xml;
 
 describe('When getting and updating a sitemap', function(){
     var sitemapService;
@@ -27,14 +28,14 @@ describe('When getting and updating a sitemap', function(){
         });
     });
     
-    it('should return something', function(done){
+    it('should return xml document from custom object service', function(done){
         sitemapService.getSiteMap(function(xml){
-            expect(xml).to.equal('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url> <loc>http://dev.careerbuildercareers.com:8080</loc><changefreq>weekly</changefreq> <priority>1</priority> </url></urlset>');
+            expect(xml).to.equal(mockxml);
             done();
         });
     });
     
-    it('', function(done){
+    it('should update sitemap and return the result xml', function(done){
         sitemapService.updateSiteMap(pages, function(xml){
             sitemap.toXML(function(sitemapXml){
                 expect(xml).to.equal(sitemapXml);

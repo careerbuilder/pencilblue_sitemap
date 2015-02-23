@@ -86,7 +86,7 @@ Crawler.prototype.start = function(){
         url:myHost + "/test.json",
         path: "/test.json"
     });
-    setTimeout(crawler.emit("complete"), 1000);
+    crawler.emit("complete");
 };
 
 Crawler.prototype.addFetchCondition = function(cb){  

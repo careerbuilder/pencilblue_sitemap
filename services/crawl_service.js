@@ -55,10 +55,10 @@ CrawlService.getName = function() {
 CrawlService.prototype.crawlSite = function(hostname, cb){
     pages.splice(0, pages.length);
     loadSettings(function(){
-        pages.push({
-            url: stripQueryString(hostname),
-            priority: 1.0
-        });
+//        pages.push({
+//            url: stripQueryString(hostname),
+//            priority: 1.0
+//        });
         pluginPaths.forEach(function(path){
             var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
             var myCrawler = new Crawler(siteRoot, path);
@@ -128,6 +128,9 @@ function stripQueryString(url){
 function getPagePriority(queueItem){
     if(queueItem.path.indexOf('/job/') === 0){
         return 0.5;
+    }
+    else if(queueItem.path === '/'){
+        return 1.0;
     }
     return 0.3;
 }

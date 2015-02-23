@@ -96,6 +96,15 @@ function loadSitemap(cb){
 }
 
 function saveSiteMap(xml){
+    if(mySiteMapDoc === undefined){
+        var ObjectID = require('mongodb').ObjectID;
+        mySiteMapDoc = {
+            _id: new ObjectID(),
+            type: mySiteMapType._id.toString(),
+            name: mySiteMapType.name,
+            host: pb.config.siteRoot
+        };
+    }
     mySiteMapDoc.xml = xml;
     cos.save(mySiteMapDoc, mySiteMapType, function(err, result){
         if(err){

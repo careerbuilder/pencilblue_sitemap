@@ -12,6 +12,10 @@ util.inherits(Crawler,EventEmitter);
 Crawler.prototype.start = function(){
     var crawler = this;
     crawler.emit("fetchcomplete", {
+        url: myHost + "/",
+        path: "/"
+    });
+    crawler.emit("fetchcomplete", {
         url:myHost + "/job/software-engineer/jobdid",
         path: "/job/software-engineer/jobdid"
     }, undefined, undefined);

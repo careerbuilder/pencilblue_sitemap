@@ -2,47 +2,29 @@ var pb = global.pb;
 var util = global.util;
 
 var sm = require('sitemap');
+var CrawlService = pb.plugins.getService('crawlService', 'pencilblue_sitemap');
+var SitemapService = pb.plugins.getService('sitemapService', 'pencilblue_sitemap');
 
 function SiteMapController() {}
 
 util.inherits(SiteMapController, pb.BaseController);
 
 SiteMapController.prototype.SiteMap = function(cb){
-    var dao = new pb.DAO();
-    var options = {
-        where: {
-            draft:{$ne: 1}
-        },
-        select: {
-            url: 1
-        }
-    };
-    
-    dao.q('page', options, function(err, pages){
-        console.log(pages);
-        var urls = [];
-        pages.forEach(function(page){
-            console.log(page);
-            urls.push({
-                url: pb.config.siteRoot + '/page/' + page.url,
-                priority: 0.3
+    var sitemapService = new SitemapService();
+    var crawlService = new CrawlService();
+    sitemapService.getSiteMap(function(xml){
+        crawlService.crawlSite(pb.config.siteRoot, function(pages){
+            sitemapService.updateSiteMap(pages, function(xml){
+                pb.log.silly("Sitemap update complete.  Result: " + xml);
             });
         });
-        var sitemap = sm.createSitemap({
-            hostname: pb.config.siteRoot,
-            cacheTime: 0,
-            urls:urls
-        });
-        sitemap.toXML(function(xml){
-            var content = {
-                code: 200,
-                content_type: 'application/xml',
-                content: xml
-            };
-            cb(content);
+        cb({
+            code:200,
+            content_type: 'application/xml',
+            content: xml
         });
     });
-}
+};
 
 SiteMapController.getRoutes = function(cb){
     var routes = [

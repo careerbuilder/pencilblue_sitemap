@@ -1,42 +1,43 @@
-var pb = global.pb;
-var util = global.util;
+module.exports = function SiteMapModule(pb){
+    var util = require("util");
 
-var sm = require('sitemap');
-var CrawlService = pb.plugins.getService('crawlService', 'pencilblue_sitemap');
-var SitemapService = pb.plugins.getService('sitemapService', 'pencilblue_sitemap');
+    var pluginService = new pb.PluginService();
+    var CrawlService = pluginService.getService('crawlService', 'pencilblue_sitemap');
+    var SitemapService = pluginService.getService('sitemapService', 'pencilblue_sitemap');
 
-function SiteMapController() {}
+    function SiteMapController() {}
 
-util.inherits(SiteMapController, pb.BaseController);
+    util.inherits(SiteMapController, pb.BaseController);
 
-SiteMapController.prototype.SiteMap = function(cb){
-    var sitemapService = new SitemapService();
-    var crawlService = new CrawlService();
-    sitemapService.getSiteMap(function(xml){
-        crawlService.crawlSite(pb.config.siteRoot, function(pages){
-            sitemapService.updateSiteMap(pages, function(xml){
-                pb.log.silly("Sitemap update complete.  Result: " + xml);
+    SiteMapController.prototype.SiteMap = function(cb){
+        var sitemapService = new SitemapService();
+        var crawlService = new CrawlService();
+        sitemapService.getSiteMap(function(xml){
+            crawlService.crawlSite(pb.config.siteRoot, function(pages){
+                sitemapService.updateSiteMap(pages, function(xml){
+                    pb.log.silly("Sitemap update complete.  Result: " + xml);
+                });
+            });
+            cb({
+                code:200,
+                content_type: 'application/xml',
+                content: xml
             });
         });
-        cb({
-            code:200,
-            content_type: 'application/xml',
-            content: xml
-        });
-    });
-};
+    };
 
-SiteMapController.getRoutes = function(cb){
-    var routes = [
-        {
-            method: 'get',
-            path: '/sitemap.xml',
-            content_type: 'application/xml',
-            handler: "SiteMap"
-        }
-    ];
+    SiteMapController.getRoutes = function(cb){
+        var routes = [
+            {
+                method: 'get',
+                path: '/sitemap.xml',
+                content_type: 'application/xml',
+                handler: "SiteMap"
+            }
+        ];
+
+        cb(null, routes);
+    };
     
-    cb(null, routes);
-};
-
-module.exports = SiteMapController;
+    return SiteMapController;
+}

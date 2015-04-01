@@ -3,13 +3,13 @@ var util = require('util');
 
 var myHost;
 var myConditions = [];
-function Crawler(host, initalPath){
+function MockCrawler(host, initalPath){
     myHost = 'http://' + host;
 }
 
-util.inherits(Crawler,EventEmitter);
+util.inherits(MockCrawler,EventEmitter);
 
-Crawler.prototype.start = function(){
+MockCrawler.prototype.start = function(){
     var crawler = this;
     crawler.emit("fetchcomplete", {
         url: myHost + "/",
@@ -93,8 +93,8 @@ Crawler.prototype.start = function(){
     crawler.emit("complete");
 };
 
-Crawler.prototype.addFetchCondition = function(cb){  
+MockCrawler.prototype.addFetchCondition = function(cb){  
     myConditions.push(cb);
 };
 
-module.exports = Crawler;
+module.exports = MockCrawler;

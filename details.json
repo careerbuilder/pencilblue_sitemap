@@ -2,7 +2,8 @@
     "uid": "pencilblue_sitemap",
     "name": "Site map plugin for pencilblue",
     "description": "Builds a full sitemap based on all content items in your site.",
-    "version": "0.0.1",
+    "version": "0.4.0",
+    "pb_version": "0.4.x",
     "author": {
     "name": "Ben Tidwell",
     "email": "ben.tidwell@careerbuilder.com",

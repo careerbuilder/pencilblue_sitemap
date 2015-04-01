@@ -1,4 +1,5 @@
 var CustomObjectService = require('./custom_object_service_mock');
+var PluginService = require('./plugin_service_mock');
 module.exports.getMockPB = function(){
     return {
         plugins: {
@@ -17,7 +18,8 @@ module.exports.getMockPB = function(){
             error:function(message){log(message);},
             debug:function(message){log(message);}
         },
-        CustomObjectService: CustomObjectService
+        CustomObjectService: CustomObjectService,
+        PluginService: PluginService
     };
 };
 

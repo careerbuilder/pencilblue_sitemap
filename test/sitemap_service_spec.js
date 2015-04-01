@@ -1,6 +1,6 @@
 var mockService = require('../test/helpers/pb_mock_service');
 var pb = mockService.getMockPB();
-var SitemapService = require('../services/sitemap_service');
+var SitemapService = require('../services/sitemap_service')(pb);
 var sinon = require('sinon');
 var chai = require('chai');
 var expect = chai.expect;

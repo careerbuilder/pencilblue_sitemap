@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - controllers/site_map.js</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">controllers</a> - site_map.js<span style="font-size: 80%;"> (source / <a href="site_map.js.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntryLo">63.2 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2015-04-23 09:05:31</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntryLo">42.9 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : module.exports = function SiteMapModule(pb){</span></a>
+<span class="lineNum">       2 </span><span class="lineCov">          1 :     var util = require(&quot;util&quot;);</span>
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span><span class="lineCov">          1 :     var pluginService = new pb.PluginService();</span>
+<span class="lineNum">       5 </span><span class="lineCov">          1 :     var CrawlService = pluginService.getService('crawlService', 'pencilblue_sitemap');</span>
+<a name="6"><span class="lineNum">       6 </span><span class="lineCov">          1 :     var SitemapService = pluginService.getService('sitemapService', 'pencilblue_sitemap');</span></a>
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span><span class="lineCov">          1 :     function SiteMapController() {}</span>
+<span class="lineNum">       9 </span>            : 
+<a name="10"><span class="lineNum">      10 </span><span class="lineCov">          1 :     util.inherits(SiteMapController, pb.BaseController);</span></a>
+<span class="lineNum">      11 </span>            : 
+<span class="lineNum">      12 </span><span class="lineCov">          1 :     SiteMapController.prototype.SiteMap = function(cb){</span>
+<a name="13"><span class="lineNum">      13 </span><span class="lineNoCov">          0 :         var sitemapService = new SitemapService();</span></a>
+<a name="14"><span class="lineNum">      14 </span><span class="lineNoCov">          0 :         var crawlService = new CrawlService();</span></a>
+<a name="15"><span class="lineNum">      15 </span><span class="lineNoCov">          0 :         sitemapService.getSiteMap(function(xml){</span></a>
+<span class="lineNum">      16 </span><span class="lineNoCov">          0 :             crawlService.crawlSite(pb.config.siteRoot, function(pages){</span>
+<span class="lineNum">      17 </span><span class="lineNoCov">          0 :                 sitemapService.updateSiteMap(pages, function(xml){</span>
+<span class="lineNum">      18 </span><span class="lineNoCov">          0 :                     pb.log.silly(&quot;Sitemap update complete.  Result: &quot; + xml);</span>
+<span class="lineNum">      19 </span>            :                 });
+<span class="lineNum">      20 </span>            :             });
+<span class="lineNum">      21 </span><span class="lineNoCov">          0 :             cb({</span>
+<span class="lineNum">      22 </span>            :                 code:200,
+<span class="lineNum">      23 </span>            :                 content_type: 'application/xml',
+<span class="lineNum">      24 </span>            :                 content: xml
+<span class="lineNum">      25 </span>            :             });
+<span class="lineNum">      26 </span>            :         });
+<a name="27"><span class="lineNum">      27 </span>            :     };</a>
+<span class="lineNum">      28 </span>            : 
+<span class="lineNum">      29 </span><span class="lineCov">          1 :     SiteMapController.getRoutes = function(cb){</span>
+<span class="lineNum">      30 </span><span class="lineCov">          1 :         var routes = [</span>
+<span class="lineNum">      31 </span>            :             {
+<span class="lineNum">      32 </span>            :                 method: 'get',
+<span class="lineNum">      33 </span>            :                 path: '/sitemap.xml',
+<span class="lineNum">      34 </span>            :                 content_type: 'application/xml',
+<span class="lineNum">      35 </span>            :                 handler: &quot;SiteMap&quot;
+<span class="lineNum">      36 </span>            :             }
+<span class="lineNum">      37 </span>            :         ];
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span><span class="lineCov">          1 :         cb(null, routes);</span>
+<span class="lineNum">      40 </span>            :     };
+<span class="lineNum">      41 </span>            :     
+<span class="lineNum">      42 </span><span class="lineCov">          1 :     return SiteMapController;</span>
+<span class="lineNum">      43 </span>            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.11</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 module.exports = function SitemapServiceModule(pb){
   var sm = require('sitemap');
+  var mongo = require('mongodb');
   var cos = new pb.CustomObjectService();
   var mySiteMapDoc;
   var mySiteMapType;
@@ -89,7 +90,7 @@ module.exports = function SitemapServiceModule(pb){
 
   function saveSiteMap(xml){
     if(mySiteMapDoc === undefined){
-      var objectId = require('mongodb').getObjectID();
+      var objectId = mongo.getObjectID();
       mySiteMapDoc = {
         _id: objectId,
         type: mySiteMapType._id.toString(),

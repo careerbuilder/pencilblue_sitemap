@@ -2,9 +2,6 @@ module.exports = function CrawlServiceModule(pb){
     var Crawler = require('simplecrawler');
     var LINQ = require('node-linq').LINQ;
     var pluginService = new pb.PluginService();
-    var excludedCrawlPaths = [];
-    var excludedSiteMapPaths = [].concat(excludedCrawlPaths);
-    var pluginPaths = [];
     var pages = [];
 
     /**
@@ -46,19 +43,19 @@ module.exports = function CrawlServiceModule(pb){
 
     CrawlService.prototype.crawlSite = function(hostname, cb){
         pages.splice(0, pages.length);
-        loadSettings(function(){
+        loadSettings(function(pluginPaths, excludedCrawlPaths, excludedSiteMapPaths){
             pluginPaths.forEach(function(path){
                 var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
                 var myCrawler = new Crawler(siteRoot, path);
                 myCrawler.initialPort = pb.config.sitePort;
                 myCrawler.maxConcurrency = pb.config.crawler.maxConcurrency;
-                var conditionID = myCrawler.addFetchCondition(function(parsedURL) {
-                    return pathIsNotAFile(parsedURL.path) && pathIsNotInExclusionList(parsedURL.path);
+                myCrawler.addFetchCondition(function(parsedURL) {
+                    return pathIsNotAFile(parsedURL.path) && listDoesNotContainItem(excludedCrawlPaths, parsedURL.path);
                 });
                 myCrawler.on("fetchcomplete",function(queueItem, data, res){
                     var myPath = stripQueryString(queueItem.path);
                     var url = stripQueryString(queueItem.url);
-                    if(pathIsNotAFile(myPath) && pathIsNotInExclusionSiteMapList(myPath) && urlIsNotAlreadyInSiteMap(url)){
+                    if(pathIsNotAFile(myPath) && listDoesNotContainItem(excludedSiteMapPaths, myPath) && urlIsNotAlreadyInSiteMap(url)){
                         pages.push({
                             url: url,
                             priority: getPagePriority(queueItem)
@@ -79,17 +76,8 @@ module.exports = function CrawlServiceModule(pb){
     };
 
     //PRIVATE
-    function pathDoesNotContainQueryString(path){
-        return path.indexOf('?') === -1;
-    }
     function pathIsNotAFile(path){
         return path.match(/^[^.]+$|\.(?!(js|css|woff|tff|ttf|svg|eot|ico|jpg|png|bmp|gif|xml|json)$)([^.]+$)/);
-    }
-    function pathIsNotInExclusionList(path){
-        return listDoesNotContainItem(excludedCrawlPaths, path);
-    }
-    function pathIsNotInExclusionSiteMapList(path){
-        return listDoesNotContainItem(excludedSiteMapPaths, path);
     }
     function urlIsNotAlreadyInSiteMap(url){
         var queryResult = new LINQ(pages).Where(function(page){
@@ -124,25 +112,12 @@ module.exports = function CrawlServiceModule(pb){
     }
 
     function loadSettings(cb){
-        pluginService.getSettings('pencilblue_sitemap', function(err, siteMapSettings){
-            for(var i in siteMapSettings){
-                var setting = siteMapSettings[i]
-                switch(setting.name){
-                        case 'crawl_paths_csv':
-                            pluginPaths = setting.value.split(',');
-                            break;
-                        case 'ignore_path_csv':
-                            excludedCrawlPaths = setting.value.split(',');
-                            break;
-                        case 'exclude_sitemap_path_csv':
-                            excludedSiteMapPaths = setting.value.split(',');
-                            break;
-                        default:
-                            break;
-                }
-            }
-            cb();
-        });
+      pluginService.getSettingsKV('pencilblue_sitemap', function(err, siteMapSettings){
+        var pluginPaths = siteMapSettings['crawl_paths_csv'].split(','),
+          excludedCrawlPaths = siteMapSettings['ignore_path_csv'].split(','),
+          excludedSiteMapPaths = siteMapSettings['exclude_sitemap_path_csv'].split(',');
+        cb(pluginPaths, excludedCrawlPaths, excludedSiteMapPaths);
+      });
     }
 
     return CrawlService;

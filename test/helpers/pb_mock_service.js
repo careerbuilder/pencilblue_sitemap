@@ -42,6 +42,6 @@ function getSettings(pluginname, cb){
 }
 
 function log(message){
-    //console.log is commented out unless a debug of pb.log messages is needed.  
+    //console.log is commented out unless a debug of pb.log messages is needed.
     //console.log(message);
 }

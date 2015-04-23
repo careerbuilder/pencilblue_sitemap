@@ -1,4 +1,4 @@
-REPORTER = nyan
+REPORTER = spec
 MOCHA=node_modules/.bin/mocha
 ISTANBUL=node_modules/.bin/istanbul
 TESTS=$(shell find test/unit -name "*spec.js")

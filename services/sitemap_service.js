@@ -54,6 +54,7 @@ module.exports = function SitemapServiceModule(pb){
   };
 
   SitemapService.prototype.updateSiteMap = function(pages, cb){
+    pb.log.silly("Updating Sitemap");
     var sitemap = sm.createSitemap({
       hostname: pb.config.siteRoot,
       cacheTime: 0,
@@ -88,23 +89,24 @@ module.exports = function SitemapServiceModule(pb){
   }
 
   function saveSiteMap(xml){
-    if(mySiteMapDoc === undefined){
-      var objectId = require('mongodb').getObjectID();
-      mySiteMapDoc = {
-        _id: objectId,
-        type: mySiteMapType._id.toString(),
-        name: mySiteMapType.name,
-        host: pb.config.siteRoot
-      };
-    }
-    mySiteMapDoc.xml = xml;
-    cos.save(mySiteMapDoc, mySiteMapType, function(err, result){
-      if(err){
-        pb.log.error(err);
+    cos.loadTypeByName('siteMap', function(err, siteMapType) {
+      if (mySiteMapDoc === undefined) {
+        mySiteMapDoc = {
+          type: siteMapType._id.toString(),
+          name: siteMapType.name,
+          host: pb.config.siteRoot
+        };
       }
-      else{
-        pb.log.silly("Sitemap custom object save/update count: " + result);
-      }
+      mySiteMapDoc.xml = xml;
+      var document = pb.DocumentCreator.create('custom_object', mySiteMapDoc);
+      cos.save(document, mySiteMapType, function (err, result) {
+        if (err) {
+          pb.log.error(err);
+        }
+        else {
+          pb.log.info("Sitemap custom object save/update count: " + result);
+        }
+      });
     });
   }
 

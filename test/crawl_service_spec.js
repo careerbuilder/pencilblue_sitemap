@@ -35,7 +35,6 @@ describe('When crawling a pencilblue site', function(){
   it('just check the pages passed in', function(done){
     crawlService.crawlSite("http://dev.careerbuildercareers.com:8080", function(pages){
       expect(pages.length).to.equal(3);
-      console.log(pages);
       done();
     });  
   });

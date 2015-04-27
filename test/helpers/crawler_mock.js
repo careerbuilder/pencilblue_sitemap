@@ -16,7 +16,7 @@ MockCrawler.prototype.start = function(){
         path: "/"
     });
     crawler.emit("fetchcomplete", {
-        url:myHost + "/job/software-engineer/jobdid",
+        url:myHost + "/job/software-engineer/jobdid?substring=sub",
         path: "/job/software-engineer/jobdid"
     }, undefined, undefined);
     crawler.emit("fetchcomplete", {

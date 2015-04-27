@@ -1,9 +1,8 @@
 module.exports = function SitemapServiceModule(pb){
-  var sm = require('sitemap');
-  var mongo = require('mongodb');
-  var cos = new pb.CustomObjectService();
-  var mySiteMapDoc;
-  var mySiteMapType;
+  var sm = require('sitemap'),
+  cos = new pb.CustomObjectService(),
+  mySiteMapDoc,
+  mySiteMapType;
 
   /**
   * Service for access to careerbuilder Job APIs
@@ -72,13 +71,15 @@ module.exports = function SitemapServiceModule(pb){
       mySiteMapType = siteMapType;
       if(err){
         pb.log.error(err);
+        cb(null);
       }
       else{
         cos.findByType(siteMapType, {}, function(err, siteMap){
           if(err){
             pb.log.error(err);
+            cb(null);
           }
-          if(siteMap.length > 0){
+          else if(typeof(siteMap) !== 'undefined' && siteMap !== null && siteMap.length > 0){
             cb(siteMap[0]);
           }
           else{

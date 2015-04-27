@@ -1,7 +1,8 @@
 var util = require('util');
 module.exports.getMockPB = function () {
   var baseController = require('./base_controller_mock')(),
-    pluginService = require('./plugin_service_mock')();
+    pluginService = require('./plugin_service_mock')(),
+    CustomObjectService = require('./custom_object_service_mock');
   var pb = {
     BaseController: baseController,
     config: {
@@ -11,6 +12,7 @@ module.exports.getMockPB = function () {
         maxConcurrency: 10
       }
     },
+    CustomObjectService: CustomObjectService,
     log: {
       info: function () {},
       error: function () {},

@@ -1,13 +1,17 @@
 module.exports = function CrawlServiceModule(pb){
     var Crawler = require('simplecrawler');
     var LINQ = require('node-linq').LINQ;
-    var pluginService = new pb.PluginService();
+    var pluginService;
     var pages = [];
 
     /**
      * Service for access to careerbuilder Job APIs
     */
-    function CrawlService() {}
+    function CrawlService(options) {
+        this.site = options.site || '';
+        this.onlyThisSite = options.onlyThisSite;
+        pluginService = new pb.PluginService(options); // just pass options after Ian's changes
+    }
 
 
     /**

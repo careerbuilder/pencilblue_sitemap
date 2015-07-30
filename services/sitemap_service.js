@@ -1,13 +1,17 @@
 module.exports = function SitemapServiceModule(pb){
   var sm = require('sitemap'),
-  cos = new pb.CustomObjectService(),
+  cos,
   mySiteMapDoc,
   mySiteMapType;
 
   /**
   * Service for access to careerbuilder Job APIs
   */
-  function SitemapService() {}
+  function SitemapService(options) {
+    this.site = options.site || '';
+    this.onlyThisSite = options.onlyThisSite;
+    cos = new pb.CustomObjectService(this.site, this.onlyThisSite)
+  }
 
 
   /**

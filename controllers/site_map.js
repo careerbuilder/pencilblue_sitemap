@@ -1,19 +1,23 @@
 module.exports = function SiteMapModule(pb){
   var util = require("util"),
-    pluginService = new pb.PluginService(),
-    CrawlService = pluginService.getService('crawlService', 'pencilblue_sitemap'),
-    SitemapService = pluginService.getService('sitemapService', 'pencilblue_sitemap');
-
+      options = {
+        site: this.site,
+        onlyThisSite: this.onlyThisSite
+      },
+      pluginService = new pb.PluginService(options),
+      CrawlService = pluginService.getService('crawlService', 'pencilblue_sitemap'),
+      SitemapService = pluginService.getService('sitemapService', 'pencilblue_sitemap');
   function SiteMapController() {}
 
   util.inherits(SiteMapController, pb.BaseController);
 
-  SiteMapController.prototype.SiteMap = function(cb){
-    var sitemapService = new SitemapService();
-    var crawlService = new CrawlService();
+  SiteMapController.prototype.SiteMap = function(cb) {
+    var self = this;
+    var sitemapService = new SitemapService(options);
+    var crawlService = new CrawlService(options);
     sitemapService.getSiteMap(function(xml){
       pb.log.info("SITE MAP: " + xml);
-      crawlService.crawlSite(pb.config.siteRoot, function(pages){
+      crawlService.crawlSite(self.hostname, function(pages) {
         pb.log.info("PAGES " + pages);
         sitemapService.updateSiteMap(pages, function(xml){
           pb.log.silly("Sitemap update complete.  Result: " + xml);

@@ -110,9 +110,6 @@ module.exports = function SitemapServiceModule(pb){
         if (err) {
           pb.log.error(err);
         }
-        else {
-          pb.log.info("Sitemap custom object save/update count: " + result);
-        }
       });
     });
   }

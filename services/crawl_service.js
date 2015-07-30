@@ -13,7 +13,6 @@ module.exports = function CrawlServiceModule(pb){
         pluginService = new pb.PluginService(options); // just pass options after Ian's changes
     }
 
-
     /**
      * This function is called when the service is being setup by the system.  It is
      * responsible for any setup that is needed when first created.  The services
@@ -69,8 +68,6 @@ module.exports = function CrawlServiceModule(pb){
                 myCrawler.on("complete", function(){
                     pb.log.silly("Crawling from " + path + " Complete");
                     if(path === pluginPaths[pluginPaths.length - 1]){
-                        pb.log.silly("Crawling all paths Complete");
-                        pb.log.silly("Crawler found " + pages.length + " pages");
                         cb(pages);
                     }
                 });
@@ -91,7 +88,11 @@ module.exports = function CrawlServiceModule(pb){
         return notInList;
     }
 
-    function listDoesNotContainItem(list, item){
+    function listDoesNotContainItem(list, item) {
+        //Ensure list is an object with items in it
+        if (typeof list === 'object' || Object.keys(list).length == 0) {
+            return true;
+        }
         var listcontaining_item = new LINQ(list).Where(function(myItem){
             return item.indexOf(myItem) > -1;
         }).ToArray().length === 0;

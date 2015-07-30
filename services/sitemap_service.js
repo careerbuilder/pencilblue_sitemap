@@ -10,6 +10,7 @@ module.exports = function SitemapServiceModule(pb){
   function SitemapService(options) {
     this.site = options.site || '';
     this.onlyThisSite = options.onlyThisSite;
+    this.hostname = options.hostname;
     cos = new pb.CustomObjectService(this.site, this.onlyThisSite)
   }
 
@@ -58,7 +59,6 @@ module.exports = function SitemapServiceModule(pb){
   };
 
   SitemapService.prototype.updateSiteMap = function(pages, cb){
-    pb.log.silly("Updating Sitemap");
     var sitemap = sm.createSitemap({
       hostname: pb.config.siteRoot,
       cacheTime: 0,
@@ -95,12 +95,13 @@ module.exports = function SitemapServiceModule(pb){
   }
 
   function saveSiteMap(xml){
+    var self = this;
     cos.loadTypeByName('siteMap', function(err, siteMapType) {
       if (mySiteMapDoc === undefined) {
         mySiteMapDoc = {
           type: siteMapType._id.toString(),
           name: siteMapType.name,
-          host: pb.config.siteRoot
+          host: self.hostname
         };
       }
       mySiteMapDoc.xml = xml;

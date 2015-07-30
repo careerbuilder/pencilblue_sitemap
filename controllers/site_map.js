@@ -2,7 +2,8 @@ module.exports = function SiteMapModule(pb){
   var util = require("util"),
       options = {
         site: this.site,
-        onlyThisSite: this.onlyThisSite
+        onlyThisSite: this.onlyThisSite,
+        hostname: this.hostname
       },
       pluginService = new pb.PluginService(options),
       CrawlService = pluginService.getService('crawlService', 'pencilblue_sitemap'),
@@ -18,7 +19,6 @@ module.exports = function SiteMapModule(pb){
     sitemapService.getSiteMap(function(xml){
       pb.log.info("SITE MAP: " + xml);
       crawlService.crawlSite(self.hostname, function(pages) {
-        pb.log.info("PAGES " + pages);
         sitemapService.updateSiteMap(pages, function(xml){
           pb.log.silly("Sitemap update complete.  Result: " + xml);
         });

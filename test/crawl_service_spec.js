@@ -16,7 +16,7 @@ describe('When crawling a pencilblue site', function(){
     crawlerStub = sinon.stub(Crawler.prototype, 'start', mockCrawler.start);
     settingsKVStub = sinon.stub(pb.PluginService.prototype, 'getSettingsKV');
     settingsKVStub.yields(null, getValidSettingsResponse());
-    crawlService = new CrawlService();
+    crawlService = new CrawlService({site : 'testSite', onlyThisSite : false});
   });
 
   it('should have name', function() {
@@ -34,7 +34,7 @@ describe('When crawling a pencilblue site', function(){
 
   it('just check the pages passed in', function(done){
     crawlService.crawlSite("http://dev.careerbuildercareers.com:8080", function(pages){
-      expect(pages.length).to.equal(3);
+      expect(pages.length).to.equal(5);
       done();
     });  
   });

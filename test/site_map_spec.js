@@ -21,7 +21,7 @@ describe('Site Map Controller', function () {
     getSiteMapStub.yields(sitemapXml);
     updateSiteMapStub = sinon.stub(SitemapService.prototype, 'updateSiteMap');
     updateSiteMapStub.yields(sitemapXml);
-    pluginServiceStub = sinon.stub(pb.PluginService.prototype, 'getService');
+    pluginServiceStub = sinon.stub(pb.PluginService, 'getService');
     pluginServiceStub.withArgs('crawlService', 'pencilblue_sitemap').returns(CrawlService);
     pluginServiceStub.withArgs('sitemapService', 'pencilblue_sitemap').returns(SitemapService);
     SiteMapController = require('../controllers/site_map')(pb);

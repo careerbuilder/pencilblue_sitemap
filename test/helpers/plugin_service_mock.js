@@ -13,7 +13,7 @@ module.exports = function PluginServiceModule() {
     return true;
   };
 
-  PluginService.prototype.getService = function(service, plugin) {
+  PluginService.getService = function(service, plugin) {
     return true;
   };
 

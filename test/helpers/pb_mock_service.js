@@ -4,7 +4,7 @@ var DocumentCreator = require('./document_creator_mock');
 module.exports.getMockPB = function(){
     return {
         plugins: {
-            getSettings : getSettings   
+            getSettings : getSettings
         },
         config: {
             sitePort:'8080',

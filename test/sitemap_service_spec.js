@@ -28,7 +28,7 @@ describe('When using sitemap service', function() {
 
   before(function() {
     SitemapService = require('../services/sitemap_service')(pb);
-    sitemapService = new SitemapService();
+    sitemapService = new SitemapService({site : 'testSite', onlyThisSite : false});
   });
 
   it('should have name', function() {
@@ -65,7 +65,7 @@ describe('When getting sitemap', function(){
     cosSaveStub = sinon.stub(pb.CustomObjectService.prototype, 'save');
     cosSaveStub.yields(undefined, 1);
     SitemapService = require('../services/sitemap_service')(pb);
-    sitemapService = new SitemapService();
+    sitemapService = new SitemapService({site : 'testSite', onlyThisSite : false});
     pages.push({
       url: "http://dev.careerbuildercareers.com:8080",
       priority: 1.0
@@ -171,7 +171,7 @@ describe('When updating sitemap', function(){
     cosSaveStub.onCall(0).yields(new Error(), null);
     cosSaveStub.yields(undefined, 1);
     SitemapService = require('../services/sitemap_service')(pb);
-    sitemapService = new SitemapService();
+    sitemapService = new SitemapService({site : 'testSite', onlyThisSite : false});
     pages.push({
       url: "http://dev.careerbuildercareers.com:8080",
       priority: 1.0

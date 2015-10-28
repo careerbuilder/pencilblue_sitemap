@@ -15,5 +15,9 @@
         "sinon": "^1.12.2",
 		"istanbul": "^0.3.7",
 		"mocha-istanbul": "^0.2.0"
+    },
+    "scripts": {
+        "test": "./node_modules/.bin/mocha --recursive --reporter nyan",
+        "posttest": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --recursive > /dev/null; genhtml coverage/lcov.info --output-directory reports/"
     }
 }

@@ -17,14 +17,19 @@
 
 module.exports = function SitemapServiceModule(pb){
   var sm = require('sitemap'),
-  cos = new pb.CustomObjectService(),
+  cos,
   mySiteMapDoc,
   mySiteMapType;
 
   /**
   * Service for access to careerbuilder Job APIs
   */
-  function SitemapService() {}
+  function SitemapService(options) {
+    this.site = options.site || '';
+    this.onlyThisSite = options.onlyThisSite;
+    this.hostname = options.hostname;
+    cos = new pb.CustomObjectService(this.site, this.onlyThisSite)
+  }
 
 
   /**
@@ -71,7 +76,6 @@ module.exports = function SitemapServiceModule(pb){
   };
 
   SitemapService.prototype.updateSiteMap = function(pages, cb){
-    pb.log.silly("Updating Sitemap");
     var sitemap = sm.createSitemap({
       hostname: pb.config.siteRoot,
       cacheTime: 0,
@@ -108,12 +112,13 @@ module.exports = function SitemapServiceModule(pb){
   }
 
   function saveSiteMap(xml){
+    var self = this;
     cos.loadTypeByName('siteMap', function(err, siteMapType) {
       if (mySiteMapDoc === undefined) {
         mySiteMapDoc = {
           type: siteMapType._id.toString(),
           name: siteMapType.name,
-          host: pb.config.siteRoot
+          host: self.hostname
         };
       }
       mySiteMapDoc.xml = xml;
@@ -121,9 +126,6 @@ module.exports = function SitemapServiceModule(pb){
       cos.save(document, mySiteMapType, function (err, result) {
         if (err) {
           pb.log.error(err);
-        }
-        else {
-          pb.log.info("Sitemap custom object save/update count: " + result);
         }
       });
     });

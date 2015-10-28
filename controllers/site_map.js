@@ -1,14 +1,18 @@
 module.exports = function SiteMapModule(pb){
-  var util = require("util"),
-      options = {
+  var util = pb.util,
+    options,
+    CrawlService,
+    SitemapService;
+
+  function SiteMapController() {
+     options = {
         site: this.site,
         onlyThisSite: this.onlyThisSite,
         hostname: this.hostname
       },
-      pluginService = new pb.PluginService(options),
-      CrawlService = pluginService.getService('crawlService', 'pencilblue_sitemap'),
-      SitemapService = pluginService.getService('sitemapService', 'pencilblue_sitemap');
-  function SiteMapController() {}
+      CrawlService = pb.PluginService.getService('crawlService', 'pencilblue_sitemap', this.site),
+      SitemapService = pb.PluginService.getService('sitemapService', 'pencilblue_sitemap', this.site);
+  }
 
   util.inherits(SiteMapController, pb.BaseController);
 

@@ -3,6 +3,11 @@ module.exports = function BaseControllerModule() {
 
   BaseController.prototype.init = function(props, cb) {
     var self = this;
+    self.context = {
+      site: 'MySiteUid' ,
+      onlyThisSite: true,
+      hostname: 'mysite.com:8080'
+    };
     cb();
   };
 

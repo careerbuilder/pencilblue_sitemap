@@ -26,6 +26,8 @@ describe('Site Map Controller', function () {
     pluginServiceStub.withArgs('sitemapService', 'pencilblue_sitemap').returns(SitemapService);
     SiteMapController = require('../controllers/site_map')(pb);
     siteMapController = new SiteMapController();
+    siteMapController.init(null, sinon.stub());
+
   });
 
   it('should be a SiteMap object', function () {

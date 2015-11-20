@@ -4,7 +4,7 @@
 		"url" : "http://github.com/cbdr/pencilblue_sitemap.git"
 	  },
     "dependencies": {
-        "simplecrawler": "0.3.10",
+        "simplecrawler": "~0.5.4",
         "node-linq": "0.0.5",
         "sitemap": "0.7.4",
         "mongodb": "2.0.23"

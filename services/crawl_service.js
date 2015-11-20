@@ -1,16 +1,13 @@
 module.exports = function CrawlServiceModule(pb){
     var Crawler = require('simplecrawler');
     var LINQ = require('node-linq').LINQ;
-    var pluginService;
     var pages = [];
 
     /**
      * Service for access to careerbuilder Job APIs
     */
     function CrawlService(options) {
-        this.site = options.site || '';
-        this.onlyThisSite = options.onlyThisSite;
-        pluginService = new pb.PluginService(options); // just pass options after Ian's changes
+        this.pluginService = new pb.PluginService(options); // just pass options after Ian's changes
     }
 
     /**
@@ -46,19 +43,19 @@ module.exports = function CrawlServiceModule(pb){
 
     CrawlService.prototype.crawlSite = function(hostname, cb){
         pages.splice(0, pages.length);
-        loadSettings(function(pluginPaths, excludedCrawlPaths, excludedSiteMapPaths){
+        loadSettings(this, function(pluginPaths, excludedCrawlPaths, excludedSiteMapPaths){
             pluginPaths.forEach(function(path){
                 var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
                 var myCrawler = new Crawler(siteRoot, path);
                 myCrawler.initialPort = pb.config.sitePort;
                 myCrawler.maxConcurrency = pb.config.crawler.maxConcurrency;
                 myCrawler.addFetchCondition(function(parsedURL) {
-                    return pathIsNotAFile(parsedURL.path) && listDoesNotContainItem(excludedCrawlPaths, parsedURL.path);
+                    return pathIsNotAFile(parsedURL.path) && shouldIncludePath(excludedCrawlPaths, parsedURL.path);
                 });
                 myCrawler.on("fetchcomplete",function(queueItem, data, res){
                     var myPath = stripQueryString(queueItem.path);
                     var url = stripQueryString(queueItem.url);
-                    if(pathIsNotAFile(myPath) && listDoesNotContainItem(excludedSiteMapPaths, myPath) && urlIsNotAlreadyInSiteMap(url)){
+                    if(pathIsNotAFile(myPath) && shouldIncludePath(excludedSiteMapPaths, myPath) && urlIsNotAlreadyInSiteMap(url)){
                         pages.push({
                             url: url,
                             priority: getPagePriority(queueItem)
@@ -78,7 +75,7 @@ module.exports = function CrawlServiceModule(pb){
 
     //PRIVATE
     function pathIsNotAFile(path){
-        return path.match(/^[^.]+$|\.(?!(js|css|woff|tff|ttf|svg|eot|ico|jpg|png|bmp|gif|xml|json)$)([^.]+$)/);
+        return path.match(/^[^.]+$|\.(?!(js|css|woff|tff|ttf|svg|eot|ico|jpg|png|bmp|gif|mp4|xml|json)$)([^.]+$)/);
     }
     function urlIsNotAlreadyInSiteMap(url){
         var queryResult = new LINQ(pages).Where(function(page){
@@ -88,15 +85,16 @@ module.exports = function CrawlServiceModule(pb){
         return notInList;
     }
 
-    function listDoesNotContainItem(list, item) {
-        //Ensure list is an object with items in it
-        if (typeof list === 'object' || Object.keys(list).length == 0) {
+    function shouldIncludePath(exclusionList, path) {
+        if (!exclusionList || exclusionList.length == 0) {
             return true;
         }
-        var listcontaining_item = new LINQ(list).Where(function(myItem){
-            return item.indexOf(myItem) > -1;
-        }).ToArray().length === 0;
-        return listcontaining_item;
+
+        var exclusionMatches = exclusionList.filter(function(item){
+            return item ? path.includes(item) : false;
+        });
+
+        return exclusionMatches.length == 0;
     }
 
     function stripQueryString(url){
@@ -116,8 +114,8 @@ module.exports = function CrawlServiceModule(pb){
         return 0.3;
     }
 
-    function loadSettings(cb){
-      pluginService.getSettingsKV('pencilblue_sitemap', function(err, siteMapSettings){
+    function loadSettings(self, cb){
+        self.pluginService.getSettingsKV('pencilblue_sitemap', function(err, siteMapSettings){
         var pluginPaths = siteMapSettings['crawl_paths_csv'].split(','),
           excludedCrawlPaths = siteMapSettings['ignore_path_csv'].split(','),
           excludedSiteMapPaths = siteMapSettings['exclude_sitemap_path_csv'].split(',');

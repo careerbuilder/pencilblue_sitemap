@@ -1,8 +1,5 @@
 module.exports = function SitemapServiceModule(pb){
-  var sm = require('sitemap'),
-  cos,
-  mySiteMapDoc,
-  mySiteMapType;
+  var sm = require('sitemap');
 
   /**
   * Service for access to careerbuilder Job APIs
@@ -11,7 +8,7 @@ module.exports = function SitemapServiceModule(pb){
     this.site = options.site || '';
     this.onlyThisSite = options.onlyThisSite;
     this.hostname = options.hostname;
-    cos = new pb.CustomObjectService(this.site, this.onlyThisSite)
+    this.cos = new pb.CustomObjectService(this.site, this.onlyThisSite)
   }
 
 
@@ -47,66 +44,78 @@ module.exports = function SitemapServiceModule(pb){
   };
 
   SitemapService.prototype.getSiteMap = function(cb){
-    loadSitemap(function(siteMapDoc){
-      if(siteMapDoc === null){
-        cb('');
+    var self = this;
+    loadSitemap(self, function(err, siteMapType, siteMapDoc){
+      if (err) {
+        pb.log.error(err);
+        return cb('');
       }
-      else{
-        mySiteMapDoc = siteMapDoc;
-        cb(siteMapDoc.xml);
+
+      if(!siteMapDoc) {
+        return cb('');
       }
+
+      cb(siteMapDoc.xml);
     });
   };
 
   SitemapService.prototype.updateSiteMap = function(pages, cb){
+    var self = this;
     var sitemap = sm.createSitemap({
-      hostname: pb.config.siteRoot,
+      hostname: this.hostname,
       cacheTime: 0,
       urls:pages
-    }); 
+    });
     sitemap.toXML(function(xml){
-      saveSiteMap(xml);
+      saveSiteMap(self, xml);
       cb(xml);
     });
   };
 
-  function loadSitemap(cb){
-    cos.loadTypeByName('siteMap', function(err, siteMapType){
-      mySiteMapType = siteMapType;
-      if(err){
-        pb.log.error(err);
-        cb(null);
+  function loadSitemap(self, cb){
+    //Loading the siteMap cos type from global is required if we only want to install the sitemap globally
+    var globalCos = new pb.CustomObjectService();
+    globalCos.loadTypeByName('siteMap', function(err, siteMapType){
+      if (err){
+        return cb(err);
       }
-      else{
-        cos.findByType(siteMapType, {}, function(err, siteMap){
-          if(err){
-            pb.log.error(err);
-            cb(null);
-          }
-          else if(typeof(siteMap) !== 'undefined' && siteMap !== null && siteMap.length > 0){
-            cb(siteMap[0]);
-          }
-          else{
-            cb(null);
-          }
-        });
+
+      if (!siteMapType) {
+        return cb(new Error("The siteMap custom object type is null or undefined."))
       }
+
+      self.cos.findByType(siteMapType, {}, function(err, siteMap){
+        if (err){
+          return cb(err);
+        }
+
+        if (siteMap && siteMap.length > 0){
+            return cb(null, siteMapType, siteMap[0]);
+        }
+
+        cb(null, siteMapType);
+      });
     });
   }
 
-  function saveSiteMap(xml){
-    var self = this;
-    cos.loadTypeByName('siteMap', function(err, siteMapType) {
-      if (mySiteMapDoc === undefined) {
-        mySiteMapDoc = {
+  function saveSiteMap(self, xml){
+    loadSitemap(self, function(err, siteMapType, siteMapDoc){
+      if(err) {
+        pb.log.error(err);
+        return;
+      }
+
+      if(!siteMapDoc) {
+        var siteMapObject = {
           type: siteMapType._id.toString(),
-          name: siteMapType.name,
+          name: siteMapType.name + self.site,
           host: self.hostname
         };
+        siteMapDoc = pb.DocumentCreator.create('custom_object', siteMapObject);
       }
-      mySiteMapDoc.xml = xml;
-      var document = pb.DocumentCreator.create('custom_object', mySiteMapDoc);
-      cos.save(document, mySiteMapType, function (err, result) {
+      siteMapDoc.xml = xml;
+
+      self.cos.save(siteMapDoc, siteMapType, function (err, result) {
         if (err) {
           pb.log.error(err);
         }

@@ -12,7 +12,7 @@ describe('When crawling a pencilblue site', function(){
     settingsKVStub;
 
   before(function(){
-    var mockCrawler = new MockCrawler();
+    var mockCrawler = new MockCrawler("fake.site");
     crawlerStub = sinon.stub(Crawler.prototype, 'start', mockCrawler.start);
     settingsKVStub = sinon.stub(pb.PluginService.prototype, 'getSettingsKV');
     settingsKVStub.yields(null, getValidSettingsResponse());
@@ -34,7 +34,7 @@ describe('When crawling a pencilblue site', function(){
 
   it('just check the pages passed in', function(done){
     crawlService.crawlSite("http://dev.careerbuildercareers.com:8080", function(pages){
-      expect(pages.length).to.equal(5);
+      expect(pages.length).to.equal(3);
       done();
     });  
   });

@@ -108,7 +108,7 @@ module.exports = function SitemapServiceModule(pb){
       if(!siteMapDoc) {
         var siteMapObject = {
           type: siteMapType._id.toString(),
-          name: siteMapType.name,
+          name: siteMapType.name + self.site,
           host: self.hostname
         };
         siteMapDoc = pb.DocumentCreator.create('custom_object', siteMapObject);

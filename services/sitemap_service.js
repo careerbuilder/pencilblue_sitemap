@@ -45,7 +45,12 @@ module.exports = function SitemapServiceModule(pb){
 
   SitemapService.prototype.getSiteMap = function(cb){
     var self = this;
-    loadSitemap(self, function(siteMapDoc){
+    loadSitemap(self, function(err, siteMapType, siteMapDoc){
+      if (err) {
+        pb.log.error(err);
+        return cb('');
+      }
+
       if(!siteMapDoc) {
         return cb('');
       }
@@ -60,7 +65,7 @@ module.exports = function SitemapServiceModule(pb){
       hostname: this.hostname,
       cacheTime: 0,
       urls:pages
-    }); 
+    });
     sitemap.toXML(function(xml){
       saveSiteMap(self, xml);
       cb(xml);
@@ -72,27 +77,34 @@ module.exports = function SitemapServiceModule(pb){
     var globalCos = new pb.CustomObjectService();
     globalCos.loadTypeByName('siteMap', function(err, siteMapType){
       if (err){
-        pb.log.error(err);
-        return cb();
+        return cb(err);
+      }
+
+      if (!siteMapType) {
+        return cb(new Error("The siteMap custom object type is null or undefined."))
       }
 
       self.cos.findByType(siteMapType, {}, function(err, siteMap){
         if (err){
-          pb.log.error(err);
-          return cb();
+          return cb(err);
         }
 
         if (siteMap && siteMap.length > 0){
-            return cb(siteMap[0], siteMapType);
+            return cb(null, siteMapType, siteMap[0]);
         }
 
-        cb();
+        cb(null, siteMapType);
       });
     });
   }
 
   function saveSiteMap(self, xml){
-    loadSitemap(self, function(siteMapDoc, siteMapType){
+    loadSitemap(self, function(err, siteMapType, siteMapDoc){
+      if(err) {
+        pb.log.error(err);
+        return;
+      }
+
       if(!siteMapDoc) {
         var siteMapObject = {
           type: siteMapType._id.toString(),
@@ -101,8 +113,8 @@ module.exports = function SitemapServiceModule(pb){
         };
         siteMapDoc = pb.DocumentCreator.create('custom_object', siteMapObject);
       }
-
       siteMapDoc.xml = xml;
+
       self.cos.save(siteMapDoc, siteMapType, function (err, result) {
         if (err) {
           pb.log.error(err);

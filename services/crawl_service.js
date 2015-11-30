@@ -7,7 +7,7 @@ module.exports = function CrawlServiceModule(pb){
      * Service for access to careerbuilder Job APIs
     */
     function CrawlService(options) {
-        this.pluginService = new pb.PluginService(options); // just pass options after Ian's changes
+        this.pluginService = new pb.PluginService(options);
     }
 
     /**
@@ -46,13 +46,19 @@ module.exports = function CrawlServiceModule(pb){
         loadSettings(this, function(pluginPaths, excludedCrawlPaths, excludedSiteMapPaths){
             pluginPaths.forEach(function(path){
                 var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
+                pb.log.debug("CrawlService - SiteMap: Creating CrawlService: SITEROOT=" + siteRoot + " PATH=" + path);
                 var myCrawler = new Crawler(siteRoot, path);
                 myCrawler.initialPort = pb.config.sitePort;
                 myCrawler.maxConcurrency = pb.config.crawler.maxConcurrency;
+                pb.log.debug("CrawlService - SiteMap: Excluded crawl paths [" + excludedCrawlPaths + "]");
+                pb.log.debug("CrawlService - SiteMap: Excluded sitemap paths [" + excludedSiteMapPaths + "]");
                 myCrawler.addFetchCondition(function(parsedURL) {
-                    return pathIsNotAFile(parsedURL.path) && shouldIncludePath(excludedCrawlPaths, parsedURL.path);
+                    var shouldFetch = pathIsNotAFile(parsedURL.path) && shouldIncludePath(excludedCrawlPaths, parsedURL.path);
+                    pb.log.debug("CrawlService: Should fetch [" + parsedURL.path + "]: " + !!shouldFetch);
+                    return shouldFetch;
                 });
                 myCrawler.on("fetchcomplete",function(queueItem, data, res){
+                    pb.log.debug("CrawlService - SiteMap: Fetch complete: QUEUEITEM=" + JSON.stringify(queueItem));
                     var myPath = stripQueryString(queueItem.path);
                     var url = stripQueryString(queueItem.url);
                     if(pathIsNotAFile(myPath) && shouldIncludePath(excludedSiteMapPaths, myPath) && urlIsNotAlreadyInSiteMap(url)){
@@ -63,7 +69,7 @@ module.exports = function CrawlServiceModule(pb){
                     }
                 });
                 myCrawler.on("complete", function(){
-                    pb.log.silly("Crawling from " + path + " Complete");
+                    pb.log.debug("CrawlService - SiteMap: Crawling from " + path + " Complete");
                     if(path === pluginPaths[pluginPaths.length - 1]){
                         cb(pages);
                     }

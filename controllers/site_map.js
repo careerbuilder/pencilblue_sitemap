@@ -23,10 +23,10 @@ module.exports = function SiteMapModule(pb){
   SiteMapController.prototype.SiteMap = function(cb) {
     var self = this;
     self.sitemapService.getSiteMap(function(xml){
-      pb.log.info("SITE MAP: " + xml);
+      pb.log.debug("SiteMapController: SITEMAP=" + JSON.stringify(xml));
       self.crawlService.crawlSite(self.hostname, function(pages) {
         self.sitemapService.updateSiteMap(pages, function(xml){
-          pb.log.silly("Sitemap update complete.  Result: " + xml);
+          pb.log.debug("SiteMapController: Sitemap update complete: " + JSON.stringify(xml));
         });
       });
       cb({

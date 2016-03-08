@@ -1,20 +1,20 @@
 {
 	"repository" : { 
 		"type" : "git", 
-		"url" : "http://github.com/cbdr/pencilblue_sitemap.git"
+		"url" : "http://github.com/careerbuilder/pencilblue_sitemap.git"
 	  },
     "dependencies": {
-        "simplecrawler": "~0.5.4",
+        "simplecrawler": "~0.6.2",
         "node-linq": "0.0.5",
-        "sitemap": "0.7.4",
-        "mongodb": "2.0.23"
+        "sitemap": "1.5.0",
+        "mongodb": "2.1.7"
     },
     "devDependencies": {
-        "chai": "^1.10.0",
-        "mocha": "^2.1.0",
-        "sinon": "^1.12.2",
-		"istanbul": "^0.3.7",
-		"mocha-istanbul": "^0.2.0"
+      "chai": "^3.5.0",
+      "mocha": "^2.4.5",
+      "sinon": "^1.17.3",
+      "istanbul": "^0.4.2",
+      "mocha-istanbul": "^0.2.0"
     },
     "scripts": {
         "test": "./node_modules/.bin/mocha --recursive --reporter nyan",

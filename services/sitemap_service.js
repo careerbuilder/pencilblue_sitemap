@@ -1,5 +1,5 @@
+var sm = require('sitemap');
 module.exports = function SitemapServiceModule(pb){
-  var sm = require('sitemap');
 
   /**
   * Service for access to careerbuilder Job APIs

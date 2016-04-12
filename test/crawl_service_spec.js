@@ -29,11 +29,11 @@ describe('When crawling a pencilblue site', function(){
     settingsKVStub;
 
   before(function(){
-    var mockCrawler = new MockCrawler();
+    var mockCrawler = new MockCrawler("fake.site");
     crawlerStub = sinon.stub(Crawler.prototype, 'start', mockCrawler.start);
     settingsKVStub = sinon.stub(pb.PluginService.prototype, 'getSettingsKV');
     settingsKVStub.yields(null, getValidSettingsResponse());
-    crawlService = new CrawlService();
+    crawlService = new CrawlService({site : 'testSite', onlyThisSite : false});
   });
 
   it('should have name', function() {

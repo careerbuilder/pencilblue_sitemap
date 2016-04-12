@@ -16,24 +16,34 @@
  */
 
 module.exports = function SiteMapModule(pb){
-  var util = require("util"),
-    pluginService = new pb.PluginService(),
-    CrawlService = pluginService.getService('crawlService', 'pencilblue_sitemap'),
-    SitemapService = pluginService.getService('sitemapService', 'pencilblue_sitemap');
-
-  function SiteMapController() {}
+  var util = pb.util,
+    BaseController = pb.BaseController;
 
   util.inherits(SiteMapController, pb.BaseController);
 
-  SiteMapController.prototype.SiteMap = function(cb){
-    var sitemapService = new SitemapService();
-    var crawlService = new CrawlService();
-    sitemapService.getSiteMap(function(xml){
-      pb.log.info("SITE MAP: " + xml);
-      crawlService.crawlSite(pb.config.siteRoot, function(pages){
-        pb.log.info("PAGES " + pages);
-        sitemapService.updateSiteMap(pages, function(xml){
-          pb.log.silly("Sitemap update complete.  Result: " + xml);
+  function SiteMapController() {}
+
+  SiteMapController.prototype.init = function(props, cb) {
+    var self = this;
+    BaseController.prototype.init.call(self, props, function () {
+      var options = {
+        site: self.context.site ,
+        onlyThisSite: self.context.onlyThisSite,
+        hostname: self.context.hostname
+      };
+      self.crawlService = new (pb.PluginService.getService('crawlService', 'pencilblue_sitemap', self.site))(options);
+      self.sitemapService = new (pb.PluginService.getService('sitemapService', 'pencilblue_sitemap', self.site))(options);
+      cb();
+    });
+  };
+
+  SiteMapController.prototype.SiteMap = function(cb) {
+    var self = this;
+    self.sitemapService.getSiteMap(function(xml){
+      pb.log.debug("SiteMapController: SITEMAP=" + JSON.stringify(xml));
+      self.crawlService.crawlSite(self.hostname, function(pages) {
+        self.sitemapService.updateSiteMap(pages, function(xml){
+          pb.log.debug("SiteMapController: Sitemap update complete: " + JSON.stringify(xml));
         });
       });
       cb({

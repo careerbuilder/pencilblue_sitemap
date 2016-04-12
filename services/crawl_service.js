@@ -18,14 +18,14 @@
 module.exports = function CrawlServiceModule(pb){
     var Crawler = require('simplecrawler');
     var LINQ = require('node-linq').LINQ;
-    var pluginService = new pb.PluginService();
     var pages = [];
 
     /**
      * Service for access to careerbuilder Job APIs
     */
-    function CrawlService() {}
-
+    function CrawlService(options) {
+        this.pluginService = new pb.PluginService(options);
+    }
 
     /**
      * This function is called when the service is being setup by the system.  It is
@@ -60,19 +60,25 @@ module.exports = function CrawlServiceModule(pb){
 
     CrawlService.prototype.crawlSite = function(hostname, cb){
         pages.splice(0, pages.length);
-        loadSettings(function(pluginPaths, excludedCrawlPaths, excludedSiteMapPaths){
+        loadSettings(this, function(pluginPaths, excludedCrawlPaths, excludedSiteMapPaths){
             pluginPaths.forEach(function(path){
                 var siteRoot = hostname.replace('http://', '').replace('https://','').replace('/', '').replace(':8080','');
+                pb.log.debug("CrawlService - SiteMap: Creating CrawlService: SITEROOT=" + siteRoot + " PATH=" + path);
                 var myCrawler = new Crawler(siteRoot, path);
                 myCrawler.initialPort = pb.config.sitePort;
                 myCrawler.maxConcurrency = pb.config.crawler.maxConcurrency;
+                pb.log.debug("CrawlService - SiteMap: Excluded crawl paths [" + excludedCrawlPaths + "]");
+                pb.log.debug("CrawlService - SiteMap: Excluded sitemap paths [" + excludedSiteMapPaths + "]");
                 myCrawler.addFetchCondition(function(parsedURL) {
-                    return pathIsNotAFile(parsedURL.path) && listDoesNotContainItem(excludedCrawlPaths, parsedURL.path);
+                    var shouldFetch = pathIsNotAFile(parsedURL.path) && shouldIncludePath(excludedCrawlPaths, parsedURL.path);
+                    pb.log.debug("CrawlService: Should fetch [" + parsedURL.path + "]: " + !!shouldFetch);
+                    return shouldFetch;
                 });
                 myCrawler.on("fetchcomplete",function(queueItem, data, res){
+                    pb.log.debug("CrawlService - SiteMap: Fetch complete: QUEUEITEM=" + JSON.stringify(queueItem));
                     var myPath = stripQueryString(queueItem.path);
                     var url = stripQueryString(queueItem.url);
-                    if(pathIsNotAFile(myPath) && listDoesNotContainItem(excludedSiteMapPaths, myPath) && urlIsNotAlreadyInSiteMap(url)){
+                    if(pathIsNotAFile(myPath) && shouldIncludePath(excludedSiteMapPaths, myPath) && urlIsNotAlreadyInSiteMap(url)){
                         pages.push({
                             url: url,
                             priority: getPagePriority(queueItem)
@@ -80,10 +86,8 @@ module.exports = function CrawlServiceModule(pb){
                     }
                 });
                 myCrawler.on("complete", function(){
-                    pb.log.silly("Crawling from " + path + " Complete");
+                    pb.log.debug("CrawlService - SiteMap: Crawling from " + path + " Complete");
                     if(path === pluginPaths[pluginPaths.length - 1]){
-                        pb.log.silly("Crawling all paths Complete");
-                        pb.log.silly("Crawler found " + pages.length + " pages");
                         cb(pages);
                     }
                 });
@@ -94,7 +98,7 @@ module.exports = function CrawlServiceModule(pb){
 
     //PRIVATE
     function pathIsNotAFile(path){
-        return path.match(/^[^.]+$|\.(?!(js|css|woff|tff|ttf|svg|eot|ico|jpg|png|bmp|gif|xml|json)$)([^.]+$)/);
+        return path.match(/^[^.]+$|\.(?!(js|css|woff|tff|ttf|svg|eot|ico|jpg|png|bmp|gif|mp4|xml|json)$)([^.]+$)/);
     }
     function urlIsNotAlreadyInSiteMap(url){
         var queryResult = new LINQ(pages).Where(function(page){
@@ -104,11 +108,16 @@ module.exports = function CrawlServiceModule(pb){
         return notInList;
     }
 
-    function listDoesNotContainItem(list, item){
-        var listcontaining_item = new LINQ(list).Where(function(myItem){
-            return item.indexOf(myItem) > -1;
-        }).ToArray().length === 0;
-        return listcontaining_item;
+    function shouldIncludePath(exclusionList, path) {
+        if (!exclusionList || exclusionList.length == 0) {
+            return true;
+        }
+
+        var exclusionMatches = exclusionList.filter(function(item){
+            return item ? path.includes(item) : false;
+        });
+
+        return exclusionMatches.length == 0;
     }
 
     function stripQueryString(url){
@@ -128,8 +137,8 @@ module.exports = function CrawlServiceModule(pb){
         return 0.3;
     }
 
-    function loadSettings(cb){
-      pluginService.getSettingsKV('pencilblue_sitemap', function(err, siteMapSettings){
+    function loadSettings(self, cb){
+        self.pluginService.getSettingsKV('pencilblue_sitemap', function(err, siteMapSettings){
         var pluginPaths = siteMapSettings['crawl_paths_csv'].split(','),
           excludedCrawlPaths = siteMapSettings['ignore_path_csv'].split(','),
           excludedSiteMapPaths = siteMapSettings['exclude_sitemap_path_csv'].split(',');
